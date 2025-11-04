@@ -231,6 +231,183 @@
     .fixed-top-right i {
       font-size: 16px;
     }
+
+    /* -----------------------
+       Added Contact Dialog styles
+       (will not modify existing logic)
+       ----------------------- */
+    /* Overlay */
+    .contact-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.32);
+      backdrop-filter: blur(6px);
+      z-index: 2000;
+      padding: 18px;
+    }
+
+    .contact-overlay.open {
+      display: flex;
+    }
+
+    /* Dialog card */
+    .contact-dialog {
+      width: 100%;
+      max-width: 420px;
+      background: #ffffff;
+      border-radius: 18px;
+      border: 1px solid #FFF2DC; /* হালকা ক্রিম বর্ডার */
+      box-shadow: 0 12px 40px rgba(10,10,10,0.12);
+      padding: 18px;
+      box-sizing: border-box;
+      transform: translateY(10px);
+      animation: dialogIn 220ms ease forwards;
+    }
+
+    @keyframes dialogIn {
+      from { opacity: 0; transform: translateY(18px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .dialog-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+      box-shadow: 0 6px 18px rgba(255,123,0,0.12);
+      background: linear-gradient(135deg, #FFF3E0, #FFEBCC);
+      color: #FF7B00;
+    }
+
+    .dialog-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #FF7B00;
+      margin: 0;
+    }
+
+    .dialog-sub {
+      margin: 2px 0 0 0;
+      font-size: 13px;
+      color: #555;
+    }
+
+    .dialog-body {
+      margin-top: 14px;
+    }
+
+    .contact-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #fff, #fff);
+      border: 1px solid #f1f1f1;
+    }
+
+    .contact-text {
+      font-weight: 700;
+      color: #333;
+      font-size: 15px;
+      word-break: break-word;
+      max-width: calc(100% - 64px);
+    }
+
+    .contact-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Copy button */
+    .btn-copy {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #FFB347, #FF7B00);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      box-shadow: 0 8px 20px rgba(255,123,0,0.2);
+      cursor: pointer;
+      transition: transform 140ms ease, box-shadow 140ms ease;
+    }
+
+    .btn-copy:active { transform: scale(0.98); }
+    .btn-copy:focus { outline: none; box-shadow: 0 0 0 4px rgba(255,123,0,0.12); }
+
+    /* Close button */
+    .btn-close {
+      margin-top: 12px;
+      width: 100%;
+      background: #FFEFD5;
+      color: #FF7B00;
+      border: none;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(255,123,0,0.06);
+    }
+
+    .btn-close:active { transform: translateY(1px); }
+
+    .dialog-note {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #666;
+      line-height: 1.3;
+    }
+
+    /* small toast for copy confirm */
+    .copy-toast {
+      position: fixed;
+      bottom: 26px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 22px;
+      font-size: 13px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 3000;
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .copy-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    @media (max-width:420px) {
+      .contact-dialog { padding: 14px; border-radius: 14px; }
+      .dialog-icon { width: 48px; height: 48px; font-size: 20px; border-radius: 12px; }
+      .btn-copy { width: 40px; height: 40px; }
+    }
+
   </style>
 </head>
 <body>
@@ -385,5 +562,217 @@ async function loadContacts() {
   loadAnnouncements();
   setupRealtimeAnnouncements();
   </script>
+
+  <!-- ============================
+       Contact Dialog Markup & Script
+       (Added WITHOUT changing any existing code/logic)
+       ============================ -->
+  <div id="contactOverlay" class="contact-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="contact-dialog" role="document" aria-labelledby="dialogTitle">
+      <div class="dialog-header">
+        <div id="dialogIcon" class="dialog-icon" aria-hidden="true">
+          <i class="fas fa-phone"></i>
+        </div>
+        <div style="flex:1;">
+          <h3 id="dialogTitle" class="dialog-title">যোগাযোগ করুন</h3>
+          <div id="dialogSubtitle" class="dialog-sub">নিচের নম্বর/লিংক কপি করুন এবং আমাদের সাথে যোগাযোগ করুন।</div>
+        </div>
+      </div>
+
+      <div class="dialog-body">
+        <div style="height:12px;"></div>
+
+        <div class="contact-row" aria-live="polite">
+          <div id="contactText" class="contact-text">0531267825</div>
+          <div class="contact-actions">
+            <button id="copyBtn" class="btn-copy" aria-label="কপি"><i class="fas fa-copy"></i></button>
+          </div>
+        </div>
+
+        <div class="dialog-note" id="dialogNote">
+          আপনি কপি বাটনে ক্লিক করে নম্বর/লিংক কপি করে বাইরে গিয়ে যোগাযোগ শুরু করতে পারবেন।
+        </div>
+
+        <button id="closeDialog" class="btn-close" aria-label="বন্ধ করুন">❌ বন্ধ করুন</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="copyToast" class="copy-toast" role="status" aria-live="polite">কপি করা হয়েছে!</div>
+
+  <script>
+  (function(){
+    // Ensure we don't interfere with existing functions/variables.
+    // Attach handlers after DOM is ready and after services are rendered.
+    function getServiceIconClass(el) {
+      if(!el) return 'phone';
+      if (el.classList.contains('whatsapp')) return 'whatsapp';
+      if (el.classList.contains('telegram')) return 'telegram';
+      if (el.classList.contains('facebook')) return 'facebook';
+      if (el.classList.contains('phone')) return 'phone';
+      return 'phone';
+    }
+
+    // Map icon class to display icon HTML & friendly title
+    const ICON_MAP = {
+      whatsapp: { icon: '<i class="fab fa-whatsapp"></i>', title: 'WhatsApp' },
+      telegram: { icon: '<i class="fab fa-telegram"></i>', title: 'Telegram' },
+      facebook: { icon: '<i class="fab fa-facebook-f"></i>', title: 'Facebook' },
+      phone: { icon: '<i class="fas fa-phone"></i>', title: 'ফোন' }
+    };
+
+    const overlay = document.getElementById('contactOverlay');
+    const dialogIcon = document.getElementById('dialogIcon');
+    const dialogTitle = document.getElementById('dialogTitle');
+    const dialogSubtitle = document.getElementById('dialogSubtitle');
+    const contactText = document.getElementById('contactText');
+    const copyBtn = document.getElementById('copyBtn');
+    const closeBtn = document.getElementById('closeDialog');
+    const copyToast = document.getElementById('copyToast');
+
+    // Helper: show overlay
+    function openDialog({type = 'phone', display = '', subtitle = ''}) {
+      const info = ICON_MAP[type] || ICON_MAP.phone;
+      dialogIcon.innerHTML = info.icon;
+      dialogTitle.textContent = `${info.title} এ যোগাযোগ করুন`;
+      dialogSubtitle.textContent = subtitle || 'নিম্নের কপি বাটন ব্যবহার করুন';
+      contactText.textContent = display || '';
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden', 'false');
+
+      // Focus copy button for keyboard users
+      setTimeout(() => {
+        copyBtn.focus();
+      }, 120);
+    }
+
+    // Helper: hide overlay
+    function closeDialog() {
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+    }
+
+    // Helper: show toast
+    let toastTimer = null;
+    function showToast(text = 'কপি করা হয়েছে!') {
+      if (toastTimer) {
+        clearTimeout(toastTimer);
+        toastTimer = null;
+      }
+      copyToast.textContent = text;
+      copyToast.classList.add('show');
+      toastTimer = setTimeout(() => {
+        copyToast.classList.remove('show');
+        toastTimer = null;
+      }, 1600);
+    }
+
+    // Copy handler
+    copyBtn.addEventListener('click', async function(e){
+      e.preventDefault();
+      const txt = contactText.textContent.trim();
+      if (!txt) {
+        showToast('কিছু কপি করার নেই');
+        return;
+      }
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(txt);
+        } else {
+          // Fallback
+          const ta = document.createElement('textarea');
+          ta.value = txt;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          ta.remove();
+        }
+        showToast('কপি করা হয়েছে!');
+      } catch (err) {
+        console.error('Copy failed', err);
+        showToast('কপি ব্যর্থ হয়েছে');
+      }
+    });
+
+    // Close handlers: button, overlay click outside dialog, Escape key
+    closeBtn.addEventListener('click', function(){ closeDialog(); });
+    overlay.addEventListener('click', function(e){
+      if (e.target === overlay) closeDialog();
+    });
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && overlay.classList.contains('open')) {
+        closeDialog();
+      }
+    });
+
+    // Event delegation for contact icon clicks inside servicesList
+    // We intercept clicks on any anchor inside .contact-icons and show dialog.
+    document.addEventListener('click', async function(evt){
+      const a = evt.target.closest && evt.target.closest('.contact-icons a');
+      if (!a) return;
+
+      // Prevent default navigation so dialog shows first
+      evt.preventDefault();
+      evt.stopPropagation();
+
+      // Determine type by class on the anchor or by href
+      let type = 'phone';
+      if (a.classList.contains('whatsapp')) type = 'whatsapp';
+      else if (a.classList.contains('telegram')) type = 'telegram';
+      else if (a.classList.contains('facebook')) type = 'facebook';
+      else if (a.classList.contains('phone')) type = 'phone';
+      else {
+        // fallback by href
+        const h = (a.getAttribute('href') || '').toLowerCase();
+        if (h.startsWith('tel:')) type = 'phone';
+        else if (h.includes('wa.me') || h.startsWith('whatsapp:')) type = 'whatsapp';
+        else if (h.includes('t.me') || h.startsWith('tg:')) type = 'telegram';
+        else if (h.includes('facebook.com')) type = 'facebook';
+      }
+
+      // Determine display text (phone number or link)
+      const href = a.getAttribute('href') || '';
+      let display = href;
+
+      // if tel: remove tel:
+      if (href.startsWith('tel:')) {
+        display = href.replace(/^tel:/i, '');
+      } else if (href.startsWith('mailto:')) {
+        display = href.replace(/^mailto:/i, '');
+      } else {
+        // keep as is for links like https://wa.me/...
+        display = href;
+      }
+
+      // Get helpful subtitle (if contact data available from loadContacts)
+      let subtitle = '';
+      try {
+        // Try to read contacts from supabase via existing loadContacts()
+        // (we call the function if available; if not, ignore)
+        if (typeof loadContacts === 'function') {
+          const data = await loadContacts();
+          // pick suitable subtitle based on type
+          if (type === 'whatsapp' && data && data.whatsapp) subtitle = 'আপনি WhatsApp-এ আমাদের মেসেজ পাঠাতে পারেন';
+          else if (type === 'telegram' && data && data.telegram) subtitle = 'আপনি Telegram-এ আমাদের খুঁজে পাচ্ছেন';
+          else if (type === 'facebook' && data && data.facebook) subtitle = 'Facebook-এ আমাদের পেজে যান';
+          else if (type === 'phone' && data && data.phone) subtitle = 'সোজা ফোনে কল করার আগে নম্বর কপি করুন';
+        }
+      } catch (err) {
+        // ignore, don't break UX
+      }
+
+      // Show dialog
+      openDialog({ type, display, subtitle });
+    });
+
+    // Also intercept clicks for the fixedAnnouncementLink if needed
+    // (Optional — but we won't block it; only if you want dialog on it change logic)
+    // Note: we intentionally do NOT change behavior of other links.
+
+    // Ensure any links generated later (dynamically) will be handled by delegation above.
+
+  })();
+  </script>
+
 </body>
 </html>
